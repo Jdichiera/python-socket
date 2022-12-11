@@ -100,11 +100,11 @@ while True:
         # file that was written would have two question marks appended to the
         # end of the file name. ex: 'test.txt??'. This is a hacky way to 
         # have a usable file extension
-        with open(fileName.split('.')[0] + '.txt','w') as f:
-            f.write(dataToWrite.decode())
+        with open(fileName.split('.')[0] + '.txt','w') as newFile:
+            newFile.write(dataToWrite.decode())
 
         # Close the file when we are done
-        f.close()
+        newFile.close()
 
         # Send a nice message to the client
         outgoingContent = 'Received file'

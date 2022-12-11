@@ -1,0 +1,60 @@
+The overall program design is very simple. There is a server script which will handle GET and PUT from a client and a client which can be used to connect to the server and submit GET and PUT requests. Both scripts assume a single request transaction and will automatically close after a transaction has occurred. Both scripts also run top to bottom, although they could be broken into methods to promote readability and code reuse. I ran into two problems with my program – one with the client and one with the server. With the client I ran into an issue where my socket would disconnect after the response message from the server. I was unable to resolve this issue so I worked around it by allowing two responses to be received before the client shut down. The issue with the server was that I was unable to write a file with a valid file extension. Even though the requested file extension was ‘.txt’, if that extension were not hardcoded, it would be written as ‘.txt??’. I was unable to determine what was causing the extra characters and opted to work around the issue by hardcoding the file extension.
+
+## The client script works as follows:
+- Libraries are imported
+    - Sys and socket libraries are used
+- Command line arguments are parsed into variables
+- A socket is opened for the client
+- The socket is used to attempt a connection with the server
+- Branching logic is used to determine if a GET or PUT request is being made
+    - If GET
+        - A GET header is formed
+        - The header is sent to the server
+        - The client receives the first server response and prints it out
+        - This response is the 202 or 404 message
+        - The client receives the second server response and prints it out
+        - This response is the document requested
+        - The GET transaction is complete so the client closes the socket
+    - If PUT
+        - A PUT header is formed
+        - The header is sent to the server
+        - The client opens the file to be sent
+        - The file data is read into a variable
+        - The file data is sent to the server
+        - The file is closed
+- A message is printed to the screen and the socket is closed
+
+## The server script works as follows
+- Libraries are imported
+    - Socket is used to create the socket and os.path is used to determine file presence
+- A socket is opened for the server
+- The server listens for an incoming connection
+- If a connection is attempted the server accepts and a connection is made
+- The server receives the message from the client
+- The message is split into an array
+- The array is used to access the different portions of the request more easily
+- The request type is fetched from the array
+- The requested file path is examined and standardized
+    - We need the file path to begin with ‘./’ if those characters are not detected then we prepend them to the filepath that was received from the client
+- Branching logic is used to handle a GET or PUT request appropriately
+    - If GET
+        - The server is checked to verify that the requested file exists
+        - If the file exists on the server
+            - A buffer is opened
+            - The file is read from the buffer
+            - The buffer is closed
+            - An ‘200 OK’ header is created
+            - The file contents are stored into an outgoing message variable
+        - If the file does not exist on the server
+            - A ‘404 Not Found’ header is created
+            - A ‘File not found’ message is created and stored in an outgoing message variable
+        - The header is sent to the client
+    - If PUT
+        - The data to write to the file is received from the client
+        - A file is opened in write mode
+        - The data received is written to the file
+        - The new file is closed
+        - A ‘Received’ message is created and stored in an outgoing message variable
+- The outgoing message is sent to the client
+- The socket is closed
+- The server script ends
