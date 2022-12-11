@@ -1,11 +1,9 @@
-# Import sys, JSON (for sending values to the server), requests (for handling the get and put requests), and socket
-# Note - requests was only used when testing the client alone
+# Import the libraries that we need to use sys and socket. Sys is used to parse
+# command line arguments
 import sys
-import json
-# import requests
 from socket import *
 
-# Declare the server address and port that my server is listening on
+# Declare the server address and port that my local server is listening on
 serverName = '127.0.0.1'
 serverPort = 12000
 
@@ -14,14 +12,6 @@ host = sys.argv[1]
 hostPort = int(sys.argv[2])
 requestMethod = sys.argv[3]
 requestPath = sys.argv[4]
-
-# This block was used when testing the client alone
-# if requestMethod.upper() == 'GET':
-#     request = requests.get(host)
-#     # print(request.text)
-# elif requestMethod.upper() == 'PUT':
-#     headers = {'Content-type': 'text/plain'}
-#     request = requests.put(host, data=open(requestPath, 'rb'), headers=headers)
 
 # Create a client socket.
 # AF_INET describes how the socket will be used SOCK_STREAM defines that a 
@@ -33,7 +23,7 @@ clientSocket.connect((serverName, serverPort))
 
 # If the request is a GET then we want to send the appropriate message to the server
 if requestMethod.upper() == 'GET':
-    # Send a message to the server. In this case I am encoding the outgoing message into JSON
+    # Create the header to be sent
     header="GET /" + requestPath + " HTTP/1.0\r\n"
 
     # Encode the header and send it to the server
@@ -44,7 +34,6 @@ if requestMethod.upper() == 'GET':
     # we have received everything, but after literally hours spent, I could not get it to work
     # Thus, we have the backup method - two receives :)
     serverResponse = clientSocket.recv(1024)
-    # print(serverResponse)
     response = serverResponse.decode()
     print(response)
     
@@ -62,39 +51,15 @@ if requestMethod.upper() == 'PUT':
     header="PUT " + requestPath + "\r\n"
     clientSocket.send((header).encode())
     
-    filetosend = open("test1.txt", "rb")
+    # Open the file that we want to send and read the file into a variable that will be
+    # used to send the data
+    filetosend = open(requestPath, "rb")
     data = filetosend.read()
     clientSocket.sendall(data)
-    # while data:
-    #     print("Sending...")
-    #     clientSocket.send(data)
-    #     data = filetosend.read(1024)
-    #     print('data done')
+
+    # Close the file after we are done
     filetosend.close()
-    # clientSocket.send(b"DONE")
+
+    # Print a message to the console and close the socket
     print("Done Sending.")
-    # print(clientSocket.recv(1024).decode())
     clientSocket.close()
-
-
-
-
-# If we have neither get nor put, just close the socket
-
-
-# elif requestMethod.upper() == 'PUT':
-#     filetosend = open("test1.txt", "rb")
-#     data = filetosend.read(1024)
-#     while data:
-#         print("Sending...")
-#         clientSocket.send(data)
-#         data = filetosend.read(1024)
-#     filetosend.close()
-#     clientSocket.send(b"DONE")
-#     print("Done Sending.")
-#     print(clientSocket.recv(1024))
-#     clientSocket.shutdown(1)
-#     clientSocket.close()
-
-
-

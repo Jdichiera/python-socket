@@ -1,8 +1,7 @@
-# Import the packages that I need
+# Import the libraries that I need. Sockets will allow me to make sockets and 
+# exists allows me to check to see if the file that is being requested
+# is on the server
 from socket import *
-import requests
-import sys
-import json
 from os.path import exists
 
 # This is the port where the server will listen on
@@ -71,7 +70,7 @@ while True:
             # Form the correct header to transfer the file
             header="HTTP/1.1 200 OK\r\n" 
             header1="Content-Type: text/html\r\n" 
-            header2="Content-Length: {}\r\n".format(fileLength)
+            header2="Content-Length: {}\r\n\r\n".format(fileLength)
 
             # set the contents of the file into the outgoing message
             outgoingContent = file;
@@ -93,26 +92,22 @@ while True:
     # If our request is a PUT request
     if (requestType.upper() == "PUT"):
         print('PUT command for ' + fileName)
+
+        # Receive the data that we want to write to the file
         dataToWrite = connectionSocket.recv(2056)
-        # filetodown = open("test.txt", "wb")
-        # while True:
-        #     print("Receiving....")
-        #     received = connectionSocket.recv(1024)
-        #     if received == b"DONE":
-        #         print("Done Receiving.")
-        #         break
-        # #     filetodown.write(data)
-        #     dataToWrite += received.decode()
-        # filetodown.close()
-        # connectionSocket.send(("Thank you for connecting.").encode())
-        # connectionSocket.shutdown(1)
-        print(fileName)
-        with open(fileName,'w') as f:
+
+        # I spent many hours rewriting this section because every
+        # file that was written would have two question marks appended to the
+        # end of the file name. ex: 'test.txt??'. This is a hacky way to 
+        # have a usable file extension
+        with open(fileName.split('.')[0] + '.txt','w') as f:
             f.write(dataToWrite.decode())
+
+        # Close the file when we are done
         f.close()
+
+        # Send a nice message to the client
         outgoingContent = 'Received file'
-        # connectionSocket.close()
-        # serverSocket.close()
         
     # try to encode and send. If this throws an exception the outgoing message is already encoded
     # and we can just send it without encoding
